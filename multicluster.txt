@@ -1,0 +1,43 @@
+import os
+import csv
+from json import dumps
+from time import sleep
+from kafka import KafkaProducer
+
+#Changing default working directory
+csv.register_dialect('fuelData',delimiter = ',',skipinitialspace=True)
+
+#Creating producer object; Lamba function used to serialize the data and encode it to utf-8 format
+producer = KafkaProducer(bootstrap_servers=['localhost:9093','localhost:9094'],value_serializer=lambda x: dumps(x).encode('utf-8'))
+
+#Reading csv to a dictionary and sending the data with the topic name 'lord-overload'
+with open("F:/Data Engineering/Fuel price/stations.csv", 'r') as csvfile:
+    reader = csv.DictReader(csvfile, dialect = 'fuelData')
+    for row in reader:
+        producer.send('CLustering', value=row)
+        sleep(5)
+        #print(dict(row))
+
+#Flushing csv file object
+csvfile.close()
+
+
+from kafka import KafkaConsumer
+from pymongo import MongoClient
+from json import loads
+
+consumer = KafkaConsumer(
+    'CLustering',
+     bootstrap_servers=['localhost:9093','localhost:9094'],
+     auto_offset_reset='earliest',
+     enable_auto_commit=True,
+     group_id='my-group',
+     value_deserializer=lambda x: loads(x.decode('utf-8')))
+
+client = MongoClient('localhost:27017')
+collection = client.cluster.clusterData
+
+for message in consumer:
+    message = message.value
+    collection.insert_one(message)
+    print('{} added to {}'.format(message, collection))
