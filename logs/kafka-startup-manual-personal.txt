@@ -1,0 +1,5 @@
+https://www.apache.org/dyn/closer.cgi?path=/kafka/2.1.0/kafka_2.12-2.1.0.tgz
+
+https://www.javainuse.com/misc/apache-kafka-hello-world
+
+https://towardsdatascience.com/kafka-python-explained-in-10-lines-of-code-800e3e07dad1
